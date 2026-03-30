@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<!-- saved from url=(0056)file:///C:/Users/amin/Downloads/code_20260326%20(1).html -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Jelly World</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background: linear-gradient(135deg, #fce4ec, #f3e5f5, #ffeef5);
+            min-height: 100vh;
+            font-family: "Georgia", "PingFang SC", serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+        /* 桃花树背景 */
+        .peach-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: url('https://picsum.photos/id/1068/1920/1080') no-repeat center center;
+            background-size: cover;
+            opacity: 0.35;
+        }
+        /* 飘落花瓣动画 */
+        .petal {
+            position: fixed;
+            top: -10%;
+            width: 18px;
+            height: 18px;
+            background: #ffc2d1;
+            border-radius: 50% 0 50% 50%;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            z-index: -1;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg) translateX(0); }
+            100% { transform: translateY(110vh) rotate(360deg) translateX(80px); }
+        }
+        /* 漂浮星星 */
+        .star {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            opacity: 0.8;
+            animation: float-star 6s ease-in-out infinite;
+            z-index: 1;
+        }
+        @keyframes float-star {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+            50% { transform: translate(10px, -10px) scale(1.2); opacity: 1; }
+        }
+        /* 导航栏 */
+        nav {
+            position: sticky;
+            top: 20px;
+            z-index: 999;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        nav.unlocked {
+            opacity: 1;
+            pointer-events: auto;
+            box-shadow: 0 8px 20px rgba(244, 143, 177, 0.2);
+        }
+        .logo {
+            font-size: 1.5rem;
+            color: #e91e63;
+            font-weight: bold;
+        }
+        .nav-links a {
+            color: #666;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: #e91e63;
+        }
+        /* 封面页 - 左右1:2分栏 */
+        .hero {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        /* 左侧照片 */
+        .hero-left {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .photo-frame {
+            width: 280px;
+            height: 380px;
+            border: 3px solid rgba(255, 183, 197, 0.7);
+            border-radius: 20px;
+            padding: 15px;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(255, 183, 197, 0.2);
+        }
+        .photo-oval {
+            width: 100%;
+            height: 100%;
+            border-radius: 50% / 60%;
+            overflow: hidden;
+            border: 2px solid rgba(255, 183, 197, 0.6);
+        }
+        .photo-oval img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* 右侧文字+START */
+        .hero-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+        }
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #e91e63;
+            text-transform: uppercase;
+            line-height: 1.3;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 8px rgba(244, 143, 177, 0.2);
+        }
+        /* START按钮容器 */
+        .start-btn-wrapper {
+            width: 33%;
+            margin-top: 20px;
+            align-self: flex-start;
+            position: relative;
+            z-index: 3;
+        }
+        /* START交互按钮 */
+        .start-btn {
+            width: 100%;
+            padding: 18px 0;
+            background: linear-gradient(135deg, #f875aa, #d870b8);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(248, 117, 170, 0.35);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 4;
+        }
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(248, 117, 170, 0.5);
+            background: linear-gradient(135deg, #f98cb8, #e081c8);
+        }
+        .start-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 6px 15px rgba(248, 117, 170, 0.3);
+        }
+        /* START后方蝴蝶结警示 */
+        .bow-decoration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M100 50 Q80 30 60 50 Q40 70 60 90 Q80 110 100 90 Q120 110 140 90 Q160 70 140 50 Q120 30 100 50 Z M80 70 Q70 60 60 70 Q50 80 60 90 Q70 100 80 90 Q90 100 100 90 Q110 100 120 90 Q130 80 120 70 Q110 60 100 70 Z" fill="%23f06292" opacity="0.7"/></svg>') no-repeat center center;
+            background-size: contain;
+            z-index: 3;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        /* 关于我 - 真正首页 */
+        .about-me {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            box-shadow: 0 8px 20px rgba(244, 143, 177, 0.15);
+        }
+        .about-title {
+            grid-column: 1 / -1;
+            font-size: 3rem;
+            text-align: center;
+            color: #e91e63;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 8px rgba(244, 143, 177, 0.2);
+        }
+        .about-info-card h3, .about-story-card h3 {
+            color: #e91e63;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        .about-info, .about-story {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+        .about-info-card img, .about-story-card img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 6px 15px rgba(244, 143, 177, 0.2);
+        }
+        /* 核心修改：大学生活+兴趣爱好 上下结构（移除左右分栏） */
+        .content-big-wrapper {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: none;
+            box-shadow: 0 8px 20px rgba(244, 143, 177, 0.15);
+            display: none;
+            flex-direction: column;
+            gap: 40px; /* 上下模块间距 */
+        }
+        /* 通用模块标题（大学生活/兴趣爱好） */
+        .content-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .content-section h2 {
+            color: #e91e63;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(244, 143, 177, 0.2);
+        }
+        /* 图标行：专业/实践/奖项 | 视听/运动/阅读 横向排列 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 三列平均分布 */
+            gap: 25px;
+        }
+        .content-card {
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+        /* 图标样式：保留左右摇摆，删除点灯相关样式 */
+        .content-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            position: relative;
+            border: 1px solid rgba(255, 183, 197, 0.4);
+            box-shadow: 0 4px 12px rgba(244, 143, 177, 0.15);
+            animation: icon-wiggle 2.5s ease-in-out infinite; /* 保留柔和摇摆 */
+            z-index: 2;
+            overflow: hidden; /* 新增：限制水波纹范围 */
+        }
+        @keyframes icon-wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-6deg); }
+            75% { transform: rotate(6deg); }
+        }
+        /* 新增：水波纹涟漪样式（透明公主风） */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            background: rgba(255, 230, 240, 0.2);
+            transform: scale(0);
+            animation: ripple-anim 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 1;
+        }
+        @keyframes ripple-anim {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+                border-width: 0;
+            }
+        }
+        /* 原有样式保留 */
+        .content-card h3 {
+            color: #e91e63;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .content-desc {
+            display: none;
+            margin-top: 15px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+        .content-desc img {
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(244, 143, 177, 0.1);
+        }
+        .content-card.active .content-desc {
+            display: block;
+        }
+        /* 留言板 */
+        .guestbook {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            display: none;
+            box-shadow: 0 8px 20px rgba(244, 143, 177, 0.15);
+        }
+        .guestbook h2 {
+            color: #e91e63;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 8px rgba(244, 143, 177, 0.2);
+        }
+        .guestbook-header img {
+            width: 60%;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 16px;
+            filter: saturate(0.8) brightness(0.95);
+            margin: 0 auto 20px;
+            display: block;
+            box-shadow: 0 6px 15px rgba(244, 143, 177, 0.2);
+        }
+        .guest-input {
+            max-width: 700px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .guest-input input, .guest-input textarea {
+            padding: 14px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            outline: none;
+            box-shadow: 0 4px 12px rgba(244, 143, 177, 0.15);
+        }
+        .guest-input button {
+            padding: 14px;
+            background: linear-gradient(135deg, #f875aa, #d870b8);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(248, 117, 170, 0.3);
+            transition: all 0.3s ease;
+        }
+        .guest-input button:hover {
+            background: linear-gradient(135deg, #f98cb8, #e081c8);
+            box-shadow: 0 8px 20px rgba(248, 117, 170, 0.4);
+        }
+        .guest-list {
+            max-width: 700px;
+            margin: 20px auto 0;
+            background: rgba(255, 240, 246, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 6px 15px rgba(244, 143, 177, 0.15);
+        }
+        .guest-item {
+            padding: 12px 0;
+            border-bottom: 1px dashed #ffb6d9;
+        }
+        /* 页脚 */
+        footer {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: none;
+        }
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+            .hero-title {
+                font-size: 2rem;
+                text-align: center;
+            }
+            .start-btn-wrapper {
+                width: 60%;
+                align-self: center;
+                margin-top: 10px;
+            }
+            .photo-frame {
+                width: 220px;
+                height: 300px;
+            }
+            .about-me {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            .about-title {
+                font-size: 2.2rem;
+            }
+            .content-big-wrapper {
+                padding: 20px;
+                gap: 30px;
+            }
+            .content-grid {
+                grid-template-columns: 1fr; /* 手机端单列 */
+                gap: 20px;
+            }
+            .guestbook {
+                padding: 20px;
+            }
+            .guestbook-header img {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 桃花树背景 -->
+    <div class="peach-bg"></div>
+    <!-- 漂浮星星 -->
+    <div id="stars"><div class="star" style="left: 58.2298%; top: 74.015%; animation-delay: 0.150646s;"></div><div class="star" style="left: 17.136%; top: 32.4851%; animation-delay: 3.29475s;"></div><div class="star" style="left: 30.0916%; top: 44.3011%; animation-delay: 0.131954s;"></div><div class="star" style="left: 21.8951%; top: 81.915%; animation-delay: 5.66169s;"></div><div class="star" style="left: 40.9215%; top: 64.9799%; animation-delay: 5.62051s;"></div><div class="star" style="left: 90.6264%; top: 93.3362%; animation-delay: 4.80099s;"></div><div class="star" style="left: 47.7589%; top: 14.233%; animation-delay: 2.29476s;"></div><div class="star" style="left: 14.4721%; top: 0.00602328%; animation-delay: 0.33182s;"></div><div class="star" style="left: 49.5473%; top: 74.2834%; animation-delay: 2.70987s;"></div><div class="star" style="left: 71.9416%; top: 10.5131%; animation-delay: 4.10317s;"></div><div class="star" style="left: 30.3888%; top: 20.2623%; animation-delay: 3.80217s;"></div><div class="star" style="left: 20.4114%; top: 2.07378%; animation-delay: 4.21846s;"></div><div class="star" style="left: 87.228%; top: 88.7641%; animation-delay: 5.38489s;"></div><div class="star" style="left: 46.5207%; top: 96.1776%; animation-delay: 2.81921s;"></div><div class="star" style="left: 43.6855%; top: 15.791%; animation-delay: 4.19779s;"></div><div class="star" style="left: 85.9926%; top: 78.4042%; animation-delay: 5.42576s;"></div><div class="star" style="left: 83.0305%; top: 44.4872%; animation-delay: 5.61507s;"></div><div class="star" style="left: 11.306%; top: 89.0315%; animation-delay: 1.62916s;"></div><div class="star" style="left: 89.1978%; top: 49.9033%; animation-delay: 2.63319s;"></div><div class="star" style="left: 71.3547%; top: 2.07978%; animation-delay: 2.34803s;"></div><div class="star" style="left: 44.0145%; top: 88.0173%; animation-delay: 2.04739s;"></div><div class="star" style="left: 41.9313%; top: 22.8564%; animation-delay: 4.76999s;"></div><div class="star" style="left: 5.34067%; top: 1.35772%; animation-delay: 0.18899s;"></div><div class="star" style="left: 29.8182%; top: 50.3001%; animation-delay: 2.24333s;"></div><div class="star" style="left: 74.6185%; top: 39.9935%; animation-delay: 2.75506s;"></div><div class="star" style="left: 13.5817%; top: 79.6656%; animation-delay: 4.92779s;"></div><div class="star" style="left: 78.4644%; top: 85.15%; animation-delay: 1.76425s;"></div><div class="star" style="left: 30.9237%; top: 31.9396%; animation-delay: 0.457068s;"></div><div class="star" style="left: 41.4515%; top: 77.4049%; animation-delay: 2.24724s;"></div><div class="star" style="left: 5.24731%; top: 7.66748%; animation-delay: 0.968665s;"></div><div class="star" style="left: 4.13009%; top: 59.6999%; animation-delay: 0.855066s;"></div><div class="star" style="left: 38.2453%; top: 31.8418%; animation-delay: 1.50563s;"></div><div class="star" style="left: 71.9644%; top: 55.28%; animation-delay: 4.68992s;"></div><div class="star" style="left: 75.5108%; top: 23.5437%; animation-delay: 5.90825s;"></div><div class="star" style="left: 3.93767%; top: 31.3905%; animation-delay: 1.79668s;"></div><div class="star" style="left: 58.9361%; top: 60.3853%; animation-delay: 1.88876s;"></div><div class="star" style="left: 10.1678%; top: 44.6131%; animation-delay: 5.47469s;"></div><div class="star" style="left: 18.1832%; top: 18.4499%; animation-delay: 0.187564s;"></div><div class="star" style="left: 56.7304%; top: 18.2552%; animation-delay: 3.01653s;"></div><div class="star" style="left: 89.4213%; top: 57.6926%; animation-delay: 3.41216s;"></div><div class="star" style="left: 43.3617%; top: 29.3093%; animation-delay: 5.93243s;"></div><div class="star" style="left: 33.4011%; top: 69.225%; animation-delay: 2.68951s;"></div><div class="star" style="left: 79.8253%; top: 88.5159%; animation-delay: 1.45644s;"></div><div class="star" style="left: 13.9231%; top: 71.5826%; animation-delay: 0.297128s;"></div><div class="star" style="left: 70.5554%; top: 95.3787%; animation-delay: 0.822863s;"></div><div class="star" style="left: 83.973%; top: 11.5307%; animation-delay: 0.968676s;"></div><div class="star" style="left: 69.0885%; top: 67.9052%; animation-delay: 5.42983s;"></div><div class="star" style="left: 27.0215%; top: 61.8956%; animation-delay: 3.14173s;"></div><div class="star" style="left: 81.6972%; top: 49.2279%; animation-delay: 3.71886s;"></div><div class="star" style="left: 60.8268%; top: 29.2332%; animation-delay: 4.51905s;"></div></div>
+    <!-- 飘落花瓣 -->
+    <div id="petals"><div class="petal" style="left: 19.9907%; animation-duration: 6.74347s; animation-delay: 5.89133s;"></div><div class="petal" style="left: 32.6242%; animation-duration: 8.44762s; animation-delay: 4.14578s;"></div><div class="petal" style="left: 47.9388%; animation-duration: 9.28451s; animation-delay: 0.763146s;"></div><div class="petal" style="left: 45.1343%; animation-duration: 6.5209s; animation-delay: 5.17355s;"></div><div class="petal" style="left: 11.1695%; animation-duration: 12.7328s; animation-delay: 0.243287s;"></div><div class="petal" style="left: 47.6963%; animation-duration: 13.1465s; animation-delay: 5.65344s;"></div><div class="petal" style="left: 87.0631%; animation-duration: 7.06205s; animation-delay: 1.30484s;"></div><div class="petal" style="left: 53.9837%; animation-duration: 13.1428s; animation-delay: 0.964395s;"></div><div class="petal" style="left: 46.3677%; animation-duration: 6.73135s; animation-delay: 5.63024s;"></div><div class="petal" style="left: 78.5606%; animation-duration: 9.80847s; animation-delay: 2.11122s;"></div><div class="petal" style="left: 56.2782%; animation-duration: 9.3985s; animation-delay: 1.53653s;"></div><div class="petal" style="left: 66.9506%; animation-duration: 7.84455s; animation-delay: 0.193461s;"></div><div class="petal" style="left: 64.8113%; animation-duration: 13.1109s; animation-delay: 0.557166s;"></div><div class="petal" style="left: 76.3665%; animation-duration: 13.3897s; animation-delay: 4.76756s;"></div><div class="petal" style="left: 66.8161%; animation-duration: 11.9958s; animation-delay: 1.54068s;"></div><div class="petal" style="left: 51.7026%; animation-duration: 12.2239s; animation-delay: 5.42682s;"></div><div class="petal" style="left: 85.7146%; animation-duration: 7.60177s; animation-delay: 3.22875s;"></div><div class="petal" style="left: 65.6356%; animation-duration: 8.93647s; animation-delay: 2.04956s;"></div><div class="petal" style="left: 36.089%; animation-duration: 11.1577s; animation-delay: 4.95493s;"></div><div class="petal" style="left: 41.0599%; animation-duration: 12.3467s; animation-delay: 5.07213s;"></div><div class="petal" style="left: 24.4856%; animation-duration: 7.37549s; animation-delay: 1.48628s;"></div><div class="petal" style="left: 64.7303%; animation-duration: 10.3475s; animation-delay: 4.31017s;"></div><div class="petal" style="left: 18.8381%; animation-duration: 13.8003s; animation-delay: 3.11715s;"></div><div class="petal" style="left: 75.7595%; animation-duration: 8.36783s; animation-delay: 3.70244s;"></div><div class="petal" style="left: 43.6613%; animation-duration: 9.83087s; animation-delay: 3.28679s;"></div><div class="petal" style="left: 80.9159%; animation-duration: 11.465s; animation-delay: 4.6864s;"></div><div class="petal" style="left: 55.0618%; animation-duration: 10.83s; animation-delay: 4.78794s;"></div><div class="petal" style="left: 38.8411%; animation-duration: 10.526s; animation-delay: 5.04459s;"></div><div class="petal" style="left: 31.5861%; animation-duration: 9.70758s; animation-delay: 3.59679s;"></div><div class="petal" style="left: 21.3065%; animation-duration: 12.2415s; animation-delay: 2.98493s;"></div><div class="petal" style="left: 42.5268%; animation-duration: 9.56854s; animation-delay: 0.799735s;"></div><div class="petal" style="left: 53.7742%; animation-duration: 9.48878s; animation-delay: 1.21733s;"></div><div class="petal" style="left: 94.3743%; animation-duration: 8.96458s; animation-delay: 3.62086s;"></div><div class="petal" style="left: 44.8855%; animation-duration: 13.6573s; animation-delay: 3.92649s;"></div><div class="petal" style="left: 73.5079%; animation-duration: 8.54921s; animation-delay: 4.62568s;"></div><div class="petal" style="left: 17.6988%; animation-duration: 6.62002s; animation-delay: 3.82125s;"></div><div class="petal" style="left: 70.3177%; animation-duration: 8.28724s; animation-delay: 0.945217s;"></div><div class="petal" style="left: 3.46097%; animation-duration: 12.5165s; animation-delay: 1.50638s;"></div><div class="petal" style="left: 15.3291%; animation-duration: 10.6952s; animation-delay: 5.73614s;"></div><div class="petal" style="left: 89.4461%; animation-duration: 10.4072s; animation-delay: 5.87978s;"></div></div>
+    <!-- 导航栏 -->
+    <nav id="navbar">
+        <div class="logo">🍮 My Jelly World</div>
+        <div class="nav-links">
+            <a href="file:///C:/Users/amin/Downloads/code_20260326%20(1).html#hero">封面</a>
+            <a href="file:///C:/Users/amin/Downloads/code_20260326%20(1).html#about">首页</a>
+            <a href="file:///C:/Users/amin/Downloads/code_20260326%20(1).html#content">生活&amp;爱好</a>
+            <a href="file:///C:/Users/amin/Downloads/code_20260326%20(1).html#guestbook">留言板</a>
+        </div>
+    </nav>
+    <!-- 封面页 -->
+    <section id="hero" class="hero">
+        <div class="hero-left">
+            <div class="photo-frame">
+                <div class="photo-oval">
+                    <!-- 【可修改】替换你的照片 -->
+                    <img src="./My Jelly World_files/1027-280x380.jpg" alt="My Photo">
+                </div>
+            </div>
+        </div>
+        <div class="hero-right">
+            <h1 class="hero-title">Get Ready to Step Into My Jelly World</h1>
+            <div class="start-btn-wrapper">
+                <button id="startBtn" class="start-btn">START</button>
+                <div class="bow-decoration"></div>
+            </div>
+        </div>
+    </section>
+    <!-- 真正首页：关于我 -->
+    <section id="about" class="about-me">
+        <h2 class="about-title">WELCOME TO MY WORLD</h2>
+        <div class="about-info-card">
+            <h3>关于我</h3>
+            <div class="about-info">
+                <!-- 【可修改】个人信息 -->
+                <p>姓名：Sisi</p>
+                <p>生日：2007.04.18</p>
+                <p>星座：白羊座</p>
+                <p>家乡：广东深圳</p>
+                <p>大学：深圳大学</p>
+                <p>专业：广告学</p>
+                <p>学号：2025081015</p>
+                <p>兴趣：唱歌、写作、设计</p>
+                <p>性格：内向、慢热、乐观</p>
+                <p>MBTI：isfp/esfp</p>
+            </div>
+            <!-- 【可修改】生活照 -->
+            <img src="./My Jelly World_files/360-300x200.jpg" alt="My Life">
+        </div>
+        <div class="about-story-card">
+            <h3>关于我的故事</h3>
+            <!-- 【可修改】音乐链接 -->
+            <div class="music-player" style="width:100%;margin-bottom:20px;">
+                <audio controls="" style="width:100%;border-radius:12px;">
+                    <source src="https://cdn.freesound.org/previews/171/171697_512491-lq.mp3" type="audio/mpeg">
+                
+            </audio></div>
+            <!-- 【可修改】个人故事 -->
+            <div class="about-story">
+                <p>回望来时路，我的成长是一场与自我较量的漫长征途。童年时，我在小镇的巷陌里奔跑，用自制的网兜追逐夏日的蝉鸣，和伙伴们在老槐树下玩弹珠，那时的世界简单纯粹，父母的臂弯是遮风挡雨的港湾。</p>
+                <br>
+                <p>步入校园后，学习的压力逐渐显现。记得初二那年，数学成绩的下滑让我陷入焦虑。面对满是红叉的试卷，我曾躲在被窝里偷偷哭泣。但父母的鼓励、老师的耐心辅导，让我重拾信心。我开始整理错题本，反复钻研薄弱题型，常常在台灯下学习到深夜。当期末成绩跃居班级前列时，我明白了努力和坚持的意义，也收获了克服困难的勇气。</p>
+                <br>
+                <p>大学是另一个转折点。远离家乡求学，我既要适应全新的环境，又要学会独立生活。竞选学生会失败的沮丧、小组作业意见分歧的争吵、考试失利的迷茫，都曾让我感到无助。但正是这些经历，让我学会了沟通与协作，学会了在压力下调整心态。我主动参与社团活动，尝试以前不敢做的演讲，不断突破舒适圈。</p>
+            </div>
+            <!-- 【可修改】成长照 -->
+            <img src="./My Jelly World_files/1033-300x200.jpg" alt="My Story">
+        </div>
+    </section>
+    <!-- 核心修改：大学生活（上）+ 兴趣爱好（下） 上下结构 -->
+    <section id="content" class="content-big-wrapper">
+        <!-- 上：大学生活 + 专业/实践/奖项 -->
+        <div class="content-section">
+            <h2>大学生活</h2>
+            <div class="content-grid">
+                <div class="content-card" onclick="toggleContent(this, event)">
+                    <div class="content-icon">📚</div>
+                    <h3>专业</h3>
+                    <div class="content-desc">
+                        <p>广告学卓越班，喜欢探索品牌策划、创意设计和新媒体运营。</p>
+                        <img src="./My Jelly World_files/209-300x200.jpg" alt="专业相关">
+                    </div>
+                </div>
+                <div class="content-card" onclick="toggleContent(this, event)">
+                    <div class="content-icon">💼</div>
+                    <h3>实践</h3>
+                    <div class="content-desc">
+                        <p>参与过校园义工、广告策划项目，积累了丰富的实战经验。</p>
+                        <img src="./My Jelly World_files/945-300x200.jpg" alt="实践相关">
+                    </div>
+                </div>
+                <div class="content-card" onclick="toggleContent(this, event)">
+                    <div class="content-icon">🏆</div>
+                    <h3>奖项</h3>
+                    <div class="content-desc">
+                        <p>曾获得校园写作比赛、创意设计大赛等奖项，每一份认可都是前进的动力。</p>
+                        <img src="./My Jelly World_files/549-300x200.jpg" alt="奖项相关">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 下：兴趣爱好 + 视听/运动/阅读 -->
+        <div class="content-section">
+            <h2>兴趣爱好</h2>
+            <div class="content-grid">
+                <div class="content-card" onclick="toggleContent(this, event)">
+                    <div class="content-icon">🎬</div>
+                    <h3>视听</h3>
+                    <div class="content-desc">
+                        <p>电影、音乐剧和K-pop是我的精神食粮，喜欢用镜头和声音记录生活。</p>
+                        <img src="./My Jelly World_files/502-300x200.jpg" alt="视听相关">
+                    </div>
+                </div>
+                <div class="content-card" onclick="toggleContent(this, event)">
+                    <div class="content-icon">🏋️</div>
+                    <h3>运动</h3>
+                    <div class="content-desc">
+                        <p>喜欢健身、瑜伽，享受汗水带来的舒展与力量感。</p>
+                        <img src="./My Jelly World_files/509-300x200.jpg" alt="运动相关">
+                    </div>
+                </div>
+                <div class="content-card" onclick="toggleContent(this, event)">
+                    <div class="content-icon">📚</div>
+                    <h3>阅读</h3>
+                    <div class="content-desc">
+                        <p>书单里有心理学、文学和商业类书籍，享受在文字里与不同灵魂对话。</p>
+                        <img src="./My Jelly World_files/818-300x200.jpg" alt="阅读相关">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- 留言板 -->
+    <section id="guestbook" class="guestbook">
+        <h2>留言板</h2>
+        <div class="guestbook-header">
+            <img src="./My Jelly World_files/1059-1200x300.jpg" alt="留言板装饰">
+        </div>
+        <div style="max-width:700px;margin:40px auto;text-align:center;">
+            <input id="name" placeholder="你的昵称~" style="width:100%;padding:14px;border-radius:20px;border:none;background:rgba(255,255,255,0.8);backdrop-filter:blur(10px);box-shadow:0 4px 12px rgba(255,155,187,0.15);margin-bottom:10px;outline:none;">
+            <textarea id="msg" placeholder="想说点什么呀~" style="width:100%;height:80px;padding:14px;border-radius:20px;border:none;background:rgba(255,255,255,0.8);backdrop-filter:blur(10px);box-shadow:0 4px 12px rgba(255,155,187,0.15);outline:none;resize:none;"></textarea>
+            <button onclick="send()" style="width:100%;background:#ff85b1;color:#fff;border:none;padding:14px;border-radius:20px;margin-top:10px;cursor:pointer;box-shadow:0 6px 15px rgba(255,133,177,0.25);">
+              留下小脚印 ✨
+            </button>
+            <div id="box" style="text-align:left;background:rgba(255,240,246,0.8);backdrop-filter:blur(10px);border-radius:22px;padding:18px;margin-top:20px;min-height:120px;box-shadow:0 6px 18px rgba(255,155,187,0.15);"></div>
+        </div>
+    </section>
+    <!-- 页脚 -->
+    <footer id="footer">
+        <div class="contact-info">
+            <!-- 【可修改】联系邮箱 -->
+            <p>联系我：<a href="mailto:2025081015@szu.edu.cn" style="color: #ff85a2; text-decoration: none;">2025081015@szu.edu.cn</a> / <a href="mailto:2124566136@qq.com" style="color: #ff85a2; text-decoration: none;">2124566136@qq.com</a></p>
+        </div>
+        <p>© 2026 My Jelly World. Made with 🍮</p>
+    </footer>
+    <script>
+        // 生成漂浮星星
+        function createStars() {
+            const stars = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 6}s`;
+                stars.appendChild(star);
+            }
+        }
+        // 生成飘落花瓣
+        function createPetals() {
+            const petals = document.getElementById('petals');
+            for (let i = 0; i < 40; i++) {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+                petal.style.left = `${Math.random() * 100}%`;
+                petal.style.animationDuration = `${Math.random() * 8 + 6}s`;
+                petal.style.animationDelay = `${Math.random() * 6}s`;
+                petals.appendChild(petal);
+            }
+        }
+        createStars();
+        createPetals();
+        // START核心交互：点击直达ABOUT首页
+        window.onload = function() {
+            const startBtn = document.getElementById('startBtn');
+            const navbar = document.getElementById('navbar');
+            const aboutSection = document.getElementById('about');
+            const contentSection = document.getElementById('content');
+            const guestbookSection = document.getElementById('guestbook');
+            const footer = document.getElementById('footer');
+            startBtn.onclick = function() {
+                navbar.classList.add('unlocked');
+                aboutSection.style.display = 'grid';
+                contentSection.style.display = 'flex';
+                guestbookSection.style.display = 'block';
+                footer.style.display = 'block';
+                aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => { this.style.transform = 'scale(1)'; }, 150);
+            };
+        };
+        // 核心修改：替换萤火虫为水波纹，保留内容展开/收起
+        function toggleContent(card, event) {
+            const icon = card.querySelector('.content-icon');
+            // 生成水波纹涟漪
+            const ripple = document.createElement('div');
+            ripple.classList.add('ripple');
+            // 获取点击坐标，定位水波纹
+            const rect = icon.getBoundingClientRect();
+            const x = event.clientX - rect.left - icon.offsetWidth / 2;
+            const y = event.clientY - rect.top - icon.offsetHeight / 2;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            ripple.style.width = `${icon.offsetWidth}px`;
+            ripple.style.height = `${icon.offsetHeight}px`;
+            icon.appendChild(ripple);
+            // 自动移除水波纹元素，避免冗余
+            setTimeout(() => { ripple.remove(); }, 800);
+            // 原有内容展开/收起逻辑完全保留
+            card.classList.toggle('active');
+            // 关闭其他卡片（可选，如需单一展开可保留，否则删除）
+            // document.querySelectorAll('.content-card').forEach(c => {
+            //     if (c !== card) c.classList.remove('active');
+            // });
+        }
+        // 留言板功能
+        localStorage.removeItem("msgList");
+        function load() {
+          let list = JSON.parse(localStorage.getItem("msgList") || "[]");
+          let html = "";
+          list.forEach(e => {
+            html += `
+            <div style="padding:12px 0;margin-bottom:10px;border-bottom:1px dashed #ffb6d9;">
+              <div style="font-weight:bold;color:#e91e63;">${e.name}</div>
+              <div style="margin-top:4px;color:#555;">${e.text}</div>
+              <div style="font-size:12px;color:#ff99bb;margin-top:4px;">${e.time}</div>
+            </div>`;
+          });
+          document.getElementById("box").innerHTML = html;
+        }
+        function send(){
+          let name = document.getElementById("name").value.trim();
+          let text = document.getElementById("msg").value.trim();
+          if(!name || !text) return;
+          let now = new Date();
+          let time = now.getFullYear() + "-" +
+                     String(now.getMonth()+1).padStart(2,'0') + "-" +
+                     String(now.getDate()).padStart(2,'0') + " " +
+                     String(now.getHours()).padStart(2,'0') + ":" +
+                     String(now.getMinutes()).padStart(2,'0');
+          let list = JSON.parse(localStorage.getItem("msgList") || "[]");
+          list.unshift({name,text,time});
+          localStorage.setItem("msgList",JSON.stringify(list));
+          document.getElementById("msg").value = "";
+          load();
+        }
+        load();
+    </script>
+
+
+</body></html>
